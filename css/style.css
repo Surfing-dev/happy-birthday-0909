@@ -643,3 +643,22 @@ body.modal-open { overflow: hidden; }
 
 /* 进度条跑完、HAPPY BIRTHDAY 弹出时，提示自动让位，避免和底部文字重叠 */
 #screen-loading.loading-done .bgm-hint { display: none !important; }
+
+/* 卡牌图还没加载好时的转圈提示（避免弹窗一片空白） */
+.card-body.card-loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 3.5px solid rgba(43, 54, 60, 0.18);
+  border-top-color: #2B363C;
+  border-radius: 50%;
+  animation: cardSpin 0.85s linear infinite;
+}
+#card-img { opacity: 0; transition: opacity 0.28s ease; }
+#card-img.is-loaded { opacity: 1; }
+
+@keyframes cardSpin { to { transform: rotate(360deg); } }

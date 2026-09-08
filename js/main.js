@@ -158,28 +158,29 @@
     }
   }
 
-  // 等第 n 张卡片的图片就绪再翻页（最多等 1.2 秒，网速差也不会卡住）
+  // 翻页时后台让路的标记
+  var navBusy = false;
+
+  /* 等第 n 张卡片能看了再翻过去：
+   * 底图（才 80KB）一好就先翻，礼物图随后补上——比干等两张都好要快得多，也不会空白 */
   function ensureLoaded(n, cb) {
     var t = tiles[n];
     if (!t) { cb(); return; }
     var imgs = t.querySelectorAll("img");
-    var pend = [];
+    var bg = imgs[0];                       // 底图
+    var all = [];
     for (var i = 0; i < imgs.length; i++) {
-      var im = imgs[i];
-      if (!im.getAttribute("src")) continue;
-      if (!im.complete || im.naturalWidth === 0) pend.push(im);
+      if (imgs[i].getAttribute("src")) all.push(imgs[i]);
     }
-    if (pend.length === 0) { cb(); return; }
-    var left = pend.length, fired = false;
-    var done = function () {
-      left--;
-      if (left <= 0 && !fired) { fired = true; cb(); }
-    };
-    pend.forEach(function (im) {
-      im.addEventListener("load", done, { once: true });
-      im.addEventListener("error", done, { once: true });
-    });
-    setTimeout(function () { if (!fired) { fired = true; cb(); } }, 1200);
+    var ready = function (im) { return im.complete && im.naturalWidth > 0; };
+    if (all.length === 0 || ready(bg) || all.every(ready)) { cb(); return; }
+
+    var fired = false;
+    var go = function () { if (!fired) { fired = true; cb(); } };
+    bg.addEventListener("load", go, { once: true });
+    bg.addEventListener("error", go, { once: true });
+    // 兜底：底图实在下不来，3.5 秒后也翻，不至于卡死
+    setTimeout(go, 3500);
   }
 
   var current = 0;
@@ -223,7 +224,9 @@
     new Image().src = CONFIG.gifts[next].card;
 
     // 图还没下好就先停在原卡片，等就绪再翻——避免翻过去一片空白
+    navBusy = true;
     ensureLoaded(next, function () {
+      navBusy = false;
       if (current !== from) return;   // 等待期间用户又翻了，放弃这次动画
       swap(from, next);
     });
@@ -382,13 +385,22 @@
     if (restStarted) return;
     restStarted = true;
     var total = CONFIG.gifts.length;
-    // 两张一组并行补齐，比一张张等快得多；都标为低优先级，不抢用户正在看的图
-    (function step(i) {
-      if (i >= total) { startCardChain(); return; }
-      hydrate(i, true);
-      hydrate(i + 1, true);
-      setTimeout(function () { step(i + 2); }, 120);
-    })(1);
+    /* 关键：后台补卡片图会占满带宽，把点开的人物卡挤到队尾（手机上就表现为"卡打不开"）。
+     * 所以这里：① 进主页 4 秒后才开始补 ② 一次只补一张 ③ 人物卡在下载时一律让路 */
+    setTimeout(function () {
+      (function step(i) {
+        if (i >= total) { startCardChain(); return; }
+        if (cardBusy() || navBusy) { setTimeout(function () { step(i); }, 250); return; }
+        hydrate(i, true);
+        setTimeout(function () { step(i + 1); }, 700);
+      })(1);
+    }, 4000);
+  }
+
+  // 是否正在等某张人物卡下载（弹窗已开、图还没好）
+  function cardBusy() {
+    var body = document.querySelector(".card-body");
+    return !!(body && body.classList.contains("card-loading"));
   }
 
   // 九张人物卡最后补（只有点开弹窗才用得上，不阻塞首屏）
@@ -396,7 +408,7 @@
   function startCardChain() {
     if (cardChainStarted) return;
     cardChainStarted = true;
-    preloadCard(0);
+    preloadCard(typeof current === "number" ? current : 0);   // 先下当前这张
   }
 
   function preloadCard(i) {
@@ -479,7 +491,22 @@
   function openCard(gift) {
     if (isOpen) return;
     isOpen = true;
+
+    // 卡牌图：优先加载 + 没好之前显示转圈，避免弹窗一片空白
+    var cardBody = document.querySelector(".card-body");
+    cardImg.classList.remove("is-loaded");
+    cardBody.classList.add("card-loading");
+    try { cardImg.fetchPriority = "high"; } catch (e) {}
+    cardImg.onload = function () {
+      cardBody.classList.remove("card-loading");
+      cardImg.classList.add("is-loaded");
+    };
+    cardImg.onerror = function () {
+      cardBody.classList.remove("card-loading");
+    };
     cardImg.src = gift.card;
+    if (cardImg.complete && cardImg.naturalWidth > 0) cardImg.onload();
+
     // 标题栏颜色跟着当前卡牌走（不突兀），没有配置则用默认蓝
     document.querySelector(".card-titlebar").style.background =
       gift.title || "#B4DCF2";
@@ -555,13 +582,26 @@
       }
     }
 
+    var playTimer = null;
     function tryPlay() {
       // 注意：这里不能隐藏提示。只有音乐真的响起来（play 事件）才收起提示，
       // 否则随手点了屏幕一下、浏览器却没允许播放时，提示就没了、音乐也没有
       if (!enabled || !audio.paused) return;
-      loadAudioFull();
-      var p = audio.play();
-      if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
+      // 延后一点再开始下载：先让用户这次点击真正想看的东西（比如卡牌图）加载，
+      // 否则 8.9MB 的歌会瞬间占满带宽，把图片挤到后面去
+      if (playTimer) return;
+      playTimer = setTimeout(function () {
+        // 人物卡还在下载的话，音乐继续等——8.9MB 会把卡图挤死
+        if (cardBusy()) {
+          playTimer = null;
+          tryPlay();
+          return;
+        }
+        playTimer = null;
+        loadAudioFull();
+        var p = audio.play();
+        if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
+      }, 800);
     }
 
     // Loading 阶段的轻提示：点一下就开音乐，点了/进主页自动消失
