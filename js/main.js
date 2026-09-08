@@ -464,6 +464,7 @@
     var home = $("screen-home");
     loading.classList.add("screen-out");   // fade + scale + blur
     home.classList.add("screen-in");
+    document.dispatchEvent(new Event("bgm:home"));   // 通知音乐模块：可以显示按钮了
     setTimeout(function () {
       loading.style.display = "none";
     }, CONFIG.timing.transition + 100);
@@ -506,5 +507,71 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeCard();
   });
+
+  /* ---------- 7. 背景音乐 ---------- */
+  (function initAudio() {
+    var conf = CONFIG.audio || {};
+    var audio = $("bgm");
+    var btn = $("music-btn");
+    if (!conf.src || !audio || !btn) return;   // 没配音乐：按钮保持隐藏，页面跟原来一样
+
+    audio.loop = conf.loop !== false;
+    audio.volume = typeof conf.volume === "number" ? conf.volume : 0.5;
+
+    // 默认开；用户手动关过一次就记住，下次进来保持关闭
+    var STORE_KEY = "bgm-enabled";
+    var enabled = conf.defaultOn !== false;
+    try {
+      var saved = localStorage.getItem(STORE_KEY);
+      if (saved !== null) enabled = saved === "1";
+    } catch (e) {}
+
+    function paint() {
+      var playing = enabled && !audio.paused;
+      btn.classList.toggle("is-playing", playing);
+      btn.classList.toggle("is-muted", !playing);
+    }
+
+    function tryPlay() {
+      if (!enabled || !audio.paused) return;
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
+    }
+
+    // 手机和电脑都不允许无交互自动播放，等用户第一次点/摸屏幕再启动
+    ["pointerdown", "touchstart", "click", "keydown"].forEach(function (ev) {
+      document.addEventListener(ev, tryPlay, { passive: true });
+    });
+
+    audio.addEventListener("play", paint);
+    audio.addEventListener("pause", paint);
+
+    // 进主页后才显示按钮，并且这时才开始加载音乐（不拖慢 Loading 和图片）
+    function maybeShow() {
+      btn.classList.add("show");
+    }
+    document.addEventListener("bgm:home", function () {
+      audio.preload = "auto";
+      audio.src = conf.src;      // 进主页才真正开始下载，边播边下
+      maybeShow();
+    });
+    audio.addEventListener("canplay", maybeShow);
+    audio.addEventListener("error", function () { btn.classList.remove("show"); });
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      enabled = !enabled;
+      try { localStorage.setItem(STORE_KEY, enabled ? "1" : "0"); } catch (err) {}
+      if (enabled) {
+        var p = audio.play();
+        if (p && p.catch) p.catch(function () {});
+      } else {
+        audio.pause();
+      }
+      paint();
+    });
+
+    paint();
+  })();
 
 })();

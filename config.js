@@ -62,6 +62,20 @@ const CONFIG = {
     topPct: 28,     // 礼物顶部距卡片顶部 = 卡片高度的 28%
   },
 
+  /* ---------- 背景音乐 ----------
+   * src       : 音乐文件路径（把你的 mp3 放进 assets/audio/ 就行）
+   *             没这个文件的话，音乐按钮会自动隐藏，页面跟原来一样
+   * volume    : 音量 0~1，0.5 = 50%
+   * loop      : 是否循环
+   * defaultOn : 进页面是否默认开（用户关过一次就会记住，下次保持关闭）
+   */
+  audio: {
+    src: "assets/audio/bgm.mp3",
+    volume: 0.5,
+    loop: true,
+    defaultOn: true,
+  },
+
   /* ---------- 动画时长（毫秒，一般不用改） ---------- */
   timing: {
     loadingDuration: 3600,  // Loading 0%→100% 总时长（3–4 秒）

@@ -565,3 +565,49 @@ button, a, [role="button"], .gift-hit, .nav-arrow, .nav-dot, .win-close, img {
 }
 
 body.modal-open { overflow: hidden; }
+
+/* ============ 背景音乐开关（手绘小喇叭） ============ */
+.music-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2.5px solid #2B363C;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 2px 3px 0 rgba(43, 54, 60, 0.35);
+  display: none;                 /* 有音乐文件才由 JS 显示 */
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 500;
+  transition: transform 0.18s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.music-btn.show { display: flex; }
+.music-btn:hover  { transform: scale(1.08); }
+.music-btn:active { transform: scale(0.92); }
+
+.mb-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: #2B363C;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mb-speaker { fill: #2B363C; stroke-width: 2.2; }
+.mb-wave { opacity: 0; transition: opacity 0.2s ease; }
+.mb-slash { stroke: #E8534E; stroke-width: 3.6; opacity: 0; transition: opacity 0.2s ease; }
+
+.music-btn.is-playing .mb-wave { opacity: 1; }
+.music-btn.is-playing .mb-w1 { animation: mbPulse 1.5s ease-in-out infinite; }
+.music-btn.is-playing .mb-w2 { animation: mbPulse 1.5s ease-in-out 0.25s infinite; }
+.music-btn.is-muted .mb-slash { opacity: 1; }
+
+@keyframes mbPulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}

@@ -79,6 +79,17 @@
     </div>
   </div>
 
+  <!-- 背景音乐：没放音乐文件时按钮会自动隐藏 -->
+  <audio id="bgm" loop preload="none"></audio>
+  <button id="music-btn" class="music-btn" aria-label="背景音乐开关">
+    <svg viewBox="0 0 48 48" class="mb-icon" aria-hidden="true">
+      <path class="mb-speaker" d="M9 18h8l10-8v28l-10-8H9z"/>
+      <path class="mb-wave mb-w1" d="M32 17.5c3.4 3.4 3.4 9.6 0 13"/>
+      <path class="mb-wave mb-w2" d="M37.5 12.5c6 6 6 17 0 23"/>
+      <path class="mb-slash" d="M9 39L39 9"/>
+    </svg>
+  </button>
+
   <!-- 手机触摸光标：小羊跟随手指移动 -->
   <div id="touch-cursor" aria-hidden="true">
     <img id="touch-cursor-img" src="assets/images/cursor-sheep.png" alt="" draggable="false">
