@@ -98,7 +98,12 @@
 
     var tileBg = document.createElement("img");
     tileBg.className = "tile-bg";
-    tileBg.src = gift.tile;
+    // 首屏只给第一张卡片真正加载图片，其余先记在 data-src，翻到时才加载
+    if (index === 0) {
+      tileBg.src = gift.tile;
+    } else {
+      tileBg.setAttribute("data-src", gift.tile);
+    }
     tileBg.alt = "";
     tileBg.draggable = false;
     tile.appendChild(tileBg);
@@ -117,7 +122,11 @@
 
     var img = document.createElement("img");
     img.className = "gift-img";
-    img.src = gift.image;
+    if (index === 0) {
+      img.src = gift.image;
+    } else {
+      img.setAttribute("data-src", gift.image);
+    }
     img.alt = "";
     img.draggable = false;
 
@@ -133,6 +142,17 @@
   });
 
   /* ---------- 1b. 左右切换九张卡片（滑动 / 箭头 / 键盘 / 圆点） ---------- */
+
+  // 真正加载第 n 张卡片的图片（把 data-src 变成 src，才会发起下载）
+  function hydrate(n) {
+    var t = tiles[n];
+    if (!t) return;
+    var imgs = t.querySelectorAll("img[data-src]");
+    for (var i = 0; i < imgs.length; i++) {
+      imgs[i].src = imgs[i].getAttribute("data-src");
+      imgs[i].removeAttribute("data-src");
+    }
+  }
 
   var current = 0;
   tiles[current].classList.add("active");
@@ -170,6 +190,13 @@
     var oldTile = tiles[current];
     var newTile = tiles[next];
     current = next;
+
+    // 翻到哪张才加载哪张（顺带把下一张预备好，翻页不卡）
+    hydrate(next);
+    hydrate((next + 1) % tiles.length);
+
+    // 提前把这张的人物卡下好，点开基本秒出
+    new Image().src = CONFIG.gifts[next].card;
 
     oldTile.classList.remove("active");
     oldTile.classList.add(dir > 0 ? "exit-left" : "exit-right");
@@ -286,7 +313,7 @@
   window.addEventListener("orientationchange", fitStage);
   fitStage();
 
-  /* ---------- 3. 后台预加载全部素材（与进度条并行，不阻塞） ---------- */
+  /* ---------- 3. 预加载：首屏只加载必需品，其余进主页后后台补齐 ---------- */
 
   function preload(srcList) {
     return Promise.all(srcList.map(function (src) {
@@ -299,16 +326,45 @@
     }));
   }
 
-  var allSrcs = [
+  // 首屏必需：Loading 小羊 + 蛋糕 + 主页背景 + 蛋糕托 + 第一张卡片的底图与礼物
+  var essentialSrcs = [
     CONFIG.assets.loadingSheep,
     CONFIG.assets.loadingCake,
     CONFIG.assets.homeBg,
     CONFIG.assets.cakeStand
   ];
-  CONFIG.gifts.forEach(function (g) {
-    allSrcs.push(g.tile, g.image, g.card);
-  });
-  var assetsReady = preload(allSrcs);
+  var firstGift = CONFIG.gifts[0];
+  if (firstGift) essentialSrcs.push(firstGift.tile, firstGift.image);
+  var assetsReady = preload(essentialSrcs);
+
+  // 进主页后，逐张补齐其余卡片的底图与礼物（串行加载，不抢占首屏带宽）
+  var restStarted = false;
+  function preloadRest() {
+    if (restStarted) return;
+    restStarted = true;
+    var total = CONFIG.gifts.length;
+    // 一张一张慢慢补，每张之间留点空隙，不抢首屏和用户操作的带宽
+    (function step(i) {
+      if (i >= total) { startCardChain(); return; }
+      hydrate(i);
+      setTimeout(function () { step(i + 1); }, 150);
+    })(1);
+  }
+
+  // 九张人物卡最后补（只有点开弹窗才用得上，不阻塞首屏）
+  var cardChainStarted = false;
+  function startCardChain() {
+    if (cardChainStarted) return;
+    cardChainStarted = true;
+    preloadCard(0);
+  }
+
+  function preloadCard(i) {
+    if (i >= CONFIG.gifts.length) return;
+    var im = new Image();
+    im.onload = im.onerror = function () { preloadCard(i + 1); };
+    im.src = CONFIG.gifts[i].card;
+  }
 
   /* ---------- 4. Loading：0% → 100%（小羊跟随真实进度） ---------- */
 
@@ -342,8 +398,11 @@
     if (t < 1) {
       requestAnimationFrame(tick);
     } else {
-      // 确保素材就绪后再弹蛋糕（本地素材通常瞬间完成）
-      assetsReady.then(showCake);
+      // 首屏素材就绪就弹蛋糕；慢网下最多再等 2.5 秒就放行，绝不干等全部素材
+      Promise.race([
+        assetsReady,
+        new Promise(function (resolve) { setTimeout(resolve, 2500); })
+      ]).then(showCake);
     }
   }
   requestAnimationFrame(tick);
@@ -351,6 +410,9 @@
   /* ---------- 5. 蛋糕弹出 → 停留 → 转场进主页 ---------- */
 
   function showCake() {
+    // 蛋糕停留的这 1.5 秒正好用来偷偷补齐素材：先下第一张人物卡，再补其余卡片
+    startCardChain();
+    preloadRest();
     $("screen-loading").classList.add("loading-done");  // 百分比数字淡出（进度条和小羊保留）
     $("cake-pop").classList.add("show");                // 蛋糕在进度条右端上方 scale 弹出 + 小星星
 
