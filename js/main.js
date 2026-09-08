@@ -144,14 +144,42 @@
   /* ---------- 1b. 左右切换九张卡片（滑动 / 箭头 / 键盘 / 圆点） ---------- */
 
   // 真正加载第 n 张卡片的图片（把 data-src 变成 src，才会发起下载）
-  function hydrate(n) {
+  function hydrate(n, isBackground) {
     var t = tiles[n];
     if (!t) return;
     var imgs = t.querySelectorAll("img[data-src]");
     for (var i = 0; i < imgs.length; i++) {
+      // 后台补齐的图标记为低优先级，永远不跟用户正在看的那张抢带宽
+      if (isBackground) {
+        try { imgs[i].fetchPriority = "low"; } catch (e) {}
+      }
       imgs[i].src = imgs[i].getAttribute("data-src");
       imgs[i].removeAttribute("data-src");
     }
+  }
+
+  // 等第 n 张卡片的图片就绪再翻页（最多等 1.2 秒，网速差也不会卡住）
+  function ensureLoaded(n, cb) {
+    var t = tiles[n];
+    if (!t) { cb(); return; }
+    var imgs = t.querySelectorAll("img");
+    var pend = [];
+    for (var i = 0; i < imgs.length; i++) {
+      var im = imgs[i];
+      if (!im.getAttribute("src")) continue;
+      if (!im.complete || im.naturalWidth === 0) pend.push(im);
+    }
+    if (pend.length === 0) { cb(); return; }
+    var left = pend.length, fired = false;
+    var done = function () {
+      left--;
+      if (left <= 0 && !fired) { fired = true; cb(); }
+    };
+    pend.forEach(function (im) {
+      im.addEventListener("load", done, { once: true });
+      im.addEventListener("error", done, { once: true });
+    });
+    setTimeout(function () { if (!fired) { fired = true; cb(); } }, 1200);
   }
 
   var current = 0;
@@ -185,11 +213,7 @@
     var total = tiles.length;
     var next = ((n % total) + total) % total;
     if (next === current) return;
-    var dir = (next - current + total) % total === 1 ? 1 : -1;  // 1=向右翻，-1=向左翻
-
-    var oldTile = tiles[current];
-    var newTile = tiles[next];
-    current = next;
+    var from = current;
 
     // 翻到哪张才加载哪张（顺带把下一张预备好，翻页不卡）
     hydrate(next);
@@ -197,6 +221,21 @@
 
     // 提前把这张的人物卡下好，点开基本秒出
     new Image().src = CONFIG.gifts[next].card;
+
+    // 图还没下好就先停在原卡片，等就绪再翻——避免翻过去一片空白
+    ensureLoaded(next, function () {
+      if (current !== from) return;   // 等待期间用户又翻了，放弃这次动画
+      swap(from, next);
+    });
+  }
+
+  function swap(from, next) {
+    var total = tiles.length;
+    var dir = (next - from + total) % total === 1 ? 1 : -1;  // 1=向右翻，-1=向左翻
+
+    var oldTile = tiles[from];
+    var newTile = tiles[next];
+    current = next;
 
     oldTile.classList.remove("active");
     oldTile.classList.add(dir > 0 ? "exit-left" : "exit-right");
@@ -343,11 +382,12 @@
     if (restStarted) return;
     restStarted = true;
     var total = CONFIG.gifts.length;
-    // 一张一张慢慢补，每张之间留点空隙，不抢首屏和用户操作的带宽
+    // 两张一组并行补齐，比一张张等快得多；都标为低优先级，不抢用户正在看的图
     (function step(i) {
       if (i >= total) { startCardChain(); return; }
-      hydrate(i);
-      setTimeout(function () { step(i + 1); }, 150);
+      hydrate(i, true);
+      hydrate(i + 1, true);
+      setTimeout(function () { step(i + 2); }, 120);
     })(1);
   }
 
