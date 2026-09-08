@@ -542,11 +542,29 @@
     }
 
     function tryPlay() {
+      hideHint();
       if (!enabled || !audio.paused) return;
       loadAudio();
       var p = audio.play();
       if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
     }
+
+    // Loading 阶段的轻提示：点一下就开音乐，点了/进主页自动消失
+    var hint = $("bgm-hint");
+    function showHint() {
+      if (hint && enabled && audio.paused) hint.classList.add("show");
+    }
+    function hideHint() {
+      if (hint) hint.classList.remove("show");
+    }
+    if (hint) {
+      showHint();
+      hint.addEventListener("click", function (e) {
+        e.stopPropagation();
+        tryPlay();
+      });
+    }
+    audio.addEventListener("play", hideHint);
 
     // 手机和电脑都不允许无交互自动播放，等用户第一次点/摸屏幕再启动
     ["pointerdown", "touchstart", "click", "keydown"].forEach(function (ev) {
@@ -561,10 +579,15 @@
       btn.classList.add("show");
     }
     document.addEventListener("bgm:home", function () {
+      hideHint();
       maybeShow();
-      // 等图片先下完（约 2 秒）再开始缓冲音乐，慢网下优先保证画面
+      // 兜底：万一之前没开始缓冲，进主页 2 秒后补上
       setTimeout(loadAudio, 2000);
     });
+
+    // 首屏素材（Loading 小羊/蛋糕/第一张卡片）一下完，就开始后台缓冲音乐
+    // 这样在进度条阶段点屏幕，音乐能立刻出声，不用等
+    assetsReady.then(loadAudio);
     audio.addEventListener("canplay", maybeShow);
     audio.addEventListener("error", function () { btn.classList.remove("show"); });
 

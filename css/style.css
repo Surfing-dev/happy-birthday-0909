@@ -611,3 +611,35 @@ body.modal-open { overflow: hidden; }
   0%, 100% { opacity: 0.3; }
   50%      { opacity: 1; }
 }
+
+/* ============ Loading 阶段的音乐轻提示 ============ */
+.bgm-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: none;                       /* 由 JS 决定是否显示 */
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid #2B363C;
+  color: #2B363C;
+  font-family: "Fredoka One", -apple-system, "Microsoft YaHei", sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  z-index: 30;
+  animation: hintPulse 1.9s ease-in-out infinite;
+}
+.bgm-hint.show { display: flex; }
+.bgm-hint:active { transform: translateX(-50%) scale(0.95); }
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.72; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.045); }
+}
+
+/* 进度条跑完、HAPPY BIRTHDAY 弹出时，提示自动让位，避免和底部文字重叠 */
+#screen-loading.loading-done .bgm-hint { display: none !important; }
