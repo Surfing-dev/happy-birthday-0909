@@ -567,8 +567,12 @@
     audio.addEventListener("play", hideHint);
 
     // 手机和电脑都不允许无交互自动播放，等用户第一次点/摸屏幕再启动
+    // 注意：点音乐按钮本身要跳过，否则会和按钮的开关逻辑打架
     ["pointerdown", "touchstart", "click", "keydown"].forEach(function (ev) {
-      document.addEventListener(ev, tryPlay, { passive: true });
+      document.addEventListener(ev, function (e) {
+        if (e.target && btn.contains(e.target)) return;
+        tryPlay();
+      }, { passive: true });
     });
 
     audio.addEventListener("play", paint);
@@ -593,19 +597,22 @@
 
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
-      enabled = !enabled;
-      try { localStorage.setItem(STORE_KEY, enabled ? "1" : "0"); } catch (err) {}
-      if (enabled) {
+      // 按真实播放状态切换：正在响就关掉，没响就开起来
+      if (!audio.paused) {
+        enabled = false;
+        audio.pause();
+      } else {
+        enabled = true;
         loadAudio();
         var p = audio.play();
         if (p && p.catch) p.catch(function () {});
-      } else {
-        audio.pause();
       }
+      try { localStorage.setItem(STORE_KEY, enabled ? "1" : "0"); } catch (err) {}
       paint();
     });
 
     paint();
+    maybeShow();   // 喇叭按钮从 Loading 阶段就显示，随时能开关音乐
   })();
 
 })();
