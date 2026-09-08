@@ -532,8 +532,18 @@
       btn.classList.toggle("is-muted", !playing);
     }
 
+    // 真正开始下载音乐（默认延后到图片下载之后，避免抢带宽；用户一点就立刻加载）
+    var srcSet = false;
+    function loadAudio() {
+      if (srcSet) return;
+      srcSet = true;
+      audio.preload = "auto";
+      audio.src = conf.src;
+    }
+
     function tryPlay() {
       if (!enabled || !audio.paused) return;
+      loadAudio();
       var p = audio.play();
       if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
     }
@@ -551,9 +561,9 @@
       btn.classList.add("show");
     }
     document.addEventListener("bgm:home", function () {
-      audio.preload = "auto";
-      audio.src = conf.src;      // 进主页才真正开始下载，边播边下
       maybeShow();
+      // 等图片先下完（约 2 秒）再开始缓冲音乐，慢网下优先保证画面
+      setTimeout(loadAudio, 2000);
     });
     audio.addEventListener("canplay", maybeShow);
     audio.addEventListener("error", function () { btn.classList.remove("show"); });
@@ -563,6 +573,7 @@
       enabled = !enabled;
       try { localStorage.setItem(STORE_KEY, enabled ? "1" : "0"); } catch (err) {}
       if (enabled) {
+        loadAudio();
         var p = audio.play();
         if (p && p.catch) p.catch(function () {});
       } else {
