@@ -574,9 +574,9 @@ body.modal-open { overflow: hidden; }
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 2.5px solid #2B363C;
+  border: 2.5px solid #94DEF4;
   background: rgba(255, 255, 255, 0.85);
-  box-shadow: 2px 3px 0 rgba(43, 54, 60, 0.35);
+  box-shadow: 2px 3px 0 rgba(43, 54, 60, 0.28);
   display: none;                 /* 有音乐文件才由 JS 显示 */
   align-items: center;
   justify-content: center;
@@ -593,12 +593,12 @@ body.modal-open { overflow: hidden; }
   width: 28px;
   height: 28px;
   fill: none;
-  stroke: #2B363C;
+  stroke: #94DEF4;
   stroke-width: 3.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.mb-speaker { fill: #2B363C; stroke-width: 2.2; }
+.mb-speaker { fill: #94DEF4; stroke-width: 2.2; }
 .mb-wave { opacity: 0; transition: opacity 0.2s ease; }
 .mb-slash { stroke: #E8534E; stroke-width: 3.6; opacity: 0; transition: opacity 0.2s ease; }
 
