@@ -15,10 +15,10 @@ const CONFIG = {
   /* ---------- 独立素材图片（路径替换在这里） ---------- */
   assets: {
     // 在这里替换 Loading 小羊（极简卡通 PNG，透明底）
-    loadingSheep: "assets/images/loading-sheep.png",
+    loadingSheep: "assets/images/loading-sheep.webp",
 
     // 在这里替换 Loading 结束后“啵”出来的小蛋糕
-    loadingCake: "assets/images/loading-cake.png",
+    loadingCake: "assets/images/loading-cake.webp",
 
     // 在这里替换主页背景（1500×2000，不含礼物）
     homeBg: "assets/images/home-bg.svg",
@@ -45,15 +45,15 @@ const CONFIG = {
    * card  = 点开后小窗口里显示的人物卡（按色系配对，想换顺序改这一行即可）
    */
   gifts: [
-    { id: "gift01", tile: "assets/images/card-bg1.jpg", image: "assets/images/gift1.png", card: "assets/images/card1.jpg", title: "#BCE4EC" },  // RISE 滑雪
-    { id: "gift02", tile: "assets/images/card-bg2.jpg", image: "assets/images/gift2.png", card: "assets/images/card2.jpg", title: "#D1DDC8" },  // WANDER 绿叶相机
-    { id: "gift03", tile: "assets/images/card-bg3.jpg", image: "assets/images/gift3.png", card: "assets/images/card3.jpg", title: "#E2B6BE" },  // REVERIE 粉蔷薇
-    { id: "gift04", tile: "assets/images/card-bg4.jpg", image: "assets/images/gift4.png", card: "assets/images/card4.jpg", title: "#EFEECE" },  // PAUSE 黄底蓝窗
-    { id: "gift05", tile: "assets/images/card-bg5.jpg", image: "assets/images/gift5.png", card: "assets/images/card5.jpg", title: "#DBC4BE" },  // FIERCE 红黑衣
-    { id: "gift06", tile: "assets/images/card-bg6.jpg", image: "assets/images/gift6.png", card: "assets/images/card6.jpg", title: "#F5F5F3" },  // DRIFT 白纸拍立得
-    { id: "gift07", tile: "assets/images/card-bg7.jpg", image: "assets/images/gift7.png", card: "assets/images/card7.jpg", title: "#A8BAA4" },  // SERENE 金色手掌
-    { id: "gift08", tile: "assets/images/card-bg8.jpg", image: "assets/images/gift8.png", card: "assets/images/card8.jpg", title: "#C0DCEF" },  // BREEZE 海边
-    { id: "gift09", tile: "assets/images/card-bg9.jpg", image: "assets/images/gift9.png", card: "assets/images/card9.jpg", title: "#FFFCF7" },  // 第九张 生日蛋糕合集
+    { id: "gift01", tile: "assets/images/card-bg1.webp", image: "assets/images/gift1.webp", card: "assets/images/card1.jpg", title: "#BCE4EC" },  // RISE 滑雪
+    { id: "gift02", tile: "assets/images/card-bg2.webp", image: "assets/images/gift2.webp", card: "assets/images/card2.jpg", title: "#D1DDC8" },  // WANDER 绿叶相机
+    { id: "gift03", tile: "assets/images/card-bg3.webp", image: "assets/images/gift3.webp", card: "assets/images/card3.jpg", title: "#E2B6BE" },  // REVERIE 粉蔷薇
+    { id: "gift04", tile: "assets/images/card-bg4.webp", image: "assets/images/gift4.webp", card: "assets/images/card4.jpg", title: "#EFEECE" },  // PAUSE 黄底蓝窗
+    { id: "gift05", tile: "assets/images/card-bg5.webp", image: "assets/images/gift5.webp", card: "assets/images/card5.jpg", title: "#DBC4BE" },  // FIERCE 红黑衣
+    { id: "gift06", tile: "assets/images/card-bg6.webp", image: "assets/images/gift6.webp", card: "assets/images/card6.jpg", title: "#F5F5F3" },  // DRIFT 白纸拍立得
+    { id: "gift07", tile: "assets/images/card-bg7.webp", image: "assets/images/gift7.webp", card: "assets/images/card7.jpg", title: "#A8BAA4" },  // SERENE 金色手掌
+    { id: "gift08", tile: "assets/images/card-bg8.webp", image: "assets/images/gift8.webp", card: "assets/images/card8.jpg", title: "#C0DCEF" },  // BREEZE 海边
+    { id: "gift09", tile: "assets/images/card-bg9.webp", image: "assets/images/gift9.webp", card: "assets/images/card9.jpg", title: "#FFFCF7" },  // 第九张 生日蛋糕合集
   ],
 
   /* 底盘+礼物在卡片内的摆位（百分比，照你的示意图调好的，一般不用改） */
