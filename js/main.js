@@ -532,19 +532,34 @@
       btn.classList.toggle("is-muted", !playing);
     }
 
-    // 真正开始下载音乐（默认延后到图片下载之后，避免抢带宽；用户一点就立刻加载）
-    var srcSet = false;
+    /* 分两级加载，避免整首歌（8.9MB）在后台偷偷吃掉图片带宽：
+     * loadAudio()      —— 只取歌曲信息（几 KB），先不下载音频数据
+     * loadAudioFull()  —— 用户一点/一按，才真正开始缓冲并播放
+     */
+    var srcSet = false, fullLoaded = false;
     function loadAudio() {
       if (srcSet) return;
       srcSet = true;
-      audio.preload = "auto";
+      audio.preload = "metadata";
       audio.src = conf.src;
+    }
+    function loadAudioFull() {
+      if (fullLoaded) return;
+      fullLoaded = true;
+      audio.preload = "auto";
+      if (srcSet) {
+        audio.load();          // 从"只取信息"切换成"整首缓冲"
+      } else {
+        srcSet = true;
+        audio.src = conf.src;
+      }
     }
 
     function tryPlay() {
-      hideHint();
+      // 注意：这里不能隐藏提示。只有音乐真的响起来（play 事件）才收起提示，
+      // 否则随手点了屏幕一下、浏览器却没允许播放时，提示就没了、音乐也没有
       if (!enabled || !audio.paused) return;
-      loadAudio();
+      loadAudioFull();
       var p = audio.play();
       if (p && p.catch) p.catch(function () { /* 浏览器还不允许，等下次点击 */ });
     }
@@ -585,13 +600,9 @@
     document.addEventListener("bgm:home", function () {
       hideHint();
       maybeShow();
-      // 兜底：万一之前没开始缓冲，进主页 2 秒后补上
-      setTimeout(loadAudio, 2000);
     });
 
-    // 首屏素材（Loading 小羊/蛋糕/第一张卡片）一下完，就开始后台缓冲音乐
-    // 这样在进度条阶段点屏幕，音乐能立刻出声，不用等
-    assetsReady.then(loadAudio);
+    // 这里不预加载任何音频：用户没点之前，一个字节都不下，带宽全留给图片
     audio.addEventListener("canplay", maybeShow);
     audio.addEventListener("error", function () { btn.classList.remove("show"); });
 
@@ -603,7 +614,7 @@
         audio.pause();
       } else {
         enabled = true;
-        loadAudio();
+        loadAudioFull();
         var p = audio.play();
         if (p && p.catch) p.catch(function () {});
       }
