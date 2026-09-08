@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 手机端优先：禁止缩放，保证 3:4 舞台等比居中 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1F7FB8">
+  <title>HAPPY BIRTHDAY TO YANGYANG</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========== 状态一：Loading 开场 ========== -->
+  <div id="screen-loading">
+    <!-- Loading 舞台：和主页 #stage 完全一致的 1500×2000 等比缩放 -->
+    <div id="loading-stage">
+      <!-- 亮蓝卡片背景：大小/位置与主页卡片区完全重合 -->
+      <div id="loading-card-bg"></div>
+    </div>
+
+    <!-- 顶部文字：Loading 期间一直显示，单独定位避免和进度条/小羊重叠 -->
+    <div class="loading-top-text" id="loading-top-text">A GIFT IS ON THE WAY...</div>
+
+    <!-- Loading 内容层：单独 absolute 居中，不参与舞台的 transform 缩放，保证文字清晰 -->
+    <div class="loading-inner" id="loading-inner">
+      <div class="sheep-track">
+        <!-- 小羊：位置由 JS 按真实进度百分比驱动 -->
+        <img id="loading-sheep" class="sheep" alt="" draggable="false">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <!-- 100% 时在进度条右端上方“啵”出的小蛋糕 + 小星星 -->
+        <div class="cake-pop" id="cake-pop">
+          <span class="sparkle s1"></span>
+          <span class="sparkle s2"></span>
+          <span class="sparkle s3"></span>
+          <span class="sparkle s4"></span>
+          <span class="sparkle s5"></span>
+          <span class="sparkle s6"></span>
+          <img id="loading-cake" alt="" draggable="false">
+        </div>
+      </div>
+      <div class="progress-num" id="progress-num">0%</div>
+    </div>
+
+    <!-- 底部文字：100% 时和蛋糕一起弹出来 -->
+    <div class="loading-bottom-text" id="loading-bottom-text">HAPPY BIRTHDAY</div>
+  </div>
+
+  <!-- ========== 状态三：主页（1500×2000 舞台，等比缩放居中） ========== -->
+  <div id="screen-home">
+    <div id="stage">
+      <img class="stage-bg" id="home-bg" alt="" draggable="false">
+      <!-- 九个礼物由 main.js 根据 config.js 的 gifts 列表自动生成 -->
+    </div>
+  </div>
+
+  <!-- ========== 状态四：卡牌弹窗（电脑小窗口造型） ========== -->
+  <div id="card-modal">
+    <div class="card-backdrop" id="card-backdrop"></div>
+    <div class="card-frame" id="card-frame">
+      <!-- 窗口标题栏 #B4DCF2：右侧 — □ × 三个按钮（只有 × 可点） -->
+      <div class="card-titlebar">
+        <div class="win-btns">
+          <span class="win-btn win-min" aria-hidden="true"></span>
+          <span class="win-btn win-max" aria-hidden="true"></span>
+          <button class="win-btn win-close" id="card-close" aria-label="关闭"></button>
+        </div>
+      </div>
+      <!-- 窗口内容区：卡牌图 -->
+      <div class="card-body">
+        <img id="card-img" alt="" draggable="false">
+      </div>
+    </div>
+  </div>
+
+  <!-- 手机触摸光标：小羊跟随手指移动 -->
+  <div id="touch-cursor" aria-hidden="true">
+    <img id="touch-cursor-img" src="assets/images/cursor-sheep.png" alt="" draggable="false">
+  </div>
+
+  <!-- 配置在前，逻辑在后；均为普通 script，双击 html 即可运行，无需服务器 -->
+  <script src="config.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

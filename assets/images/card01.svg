@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1000">
+  <!-- 占位卡牌（3:4，对应原图 2410×3214）：换成你自己的人物卡牌 PNG 即可 -->
+  <rect width="750" height="1000" fill="#FFFFFF"/>
+  <rect x="10" y="10" width="730" height="980" rx="36" fill="#F5EFFF"
+        stroke="#FF9EBB" stroke-width="6" stroke-dasharray="14 10" stroke-linecap="round"/>
+
+  <!-- 中央大星星（人物立绘的占位） -->
+  <polygon points="375,300 411,394 515,394 411,430 375,560 339,430 235,394 339,394"
+           fill="#FFD166" stroke="#4A3B36" stroke-width="6" stroke-linejoin="round"
+           transform="translate(0,40) scale(1,0.92) translate(0,-20)"/>
+
+  <!-- 点缀小星星 -->
+  <polygon points="180,192 187,213 208,220 187,227 180,248 173,227 152,220 173,213" fill="#FFB3C7"/>
+  <polygon points="585,228 591,245 608,250 591,255 585,272 579,255 562,250 579,245" fill="#CDBCF5"/>
+  <polygon points="590,614 597,633 616,640 597,647 590,666 583,647 564,640 583,633" fill="#B8E6D4"/>
+
+  <!-- 占位文字（换成真实卡牌后自然消失） -->
+  <text x="375" y="790" text-anchor="middle" font-size="64" font-weight="700"
+        font-family="'Comic Sans MS','Segoe Print',cursive" fill="#7A6C9F">CARD 01</text>
+  <text x="375" y="852" text-anchor="middle" font-size="26"
+        font-family="'Comic Sans MS','Segoe Print',cursive" fill="#B4A8CC">2410 × 3214 · 在 config.js 替换为你的卡牌</text>
+</svg>

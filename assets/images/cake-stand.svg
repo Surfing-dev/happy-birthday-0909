@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 360">
+  <!-- 占位蛋糕台：礼物摆在台面上 -->
+  <!-- 地面轻阴影 -->
+  <ellipse cx="350" cy="336" rx="250" ry="24" fill="#EBD3BF" opacity="0.65"/>
+  <!-- 底座 -->
+  <ellipse cx="350" cy="300" rx="135" ry="24" fill="#FFD9E6" stroke="#4A3B36" stroke-width="6"/>
+  <!-- 支柱 -->
+  <path d="M338,132 C344,190 344,240 336,292 L364,292 C356,240 356,190 362,132 Z"
+        fill="#FFD9E6" stroke="#4A3B36" stroke-width="6" stroke-linejoin="round"/>
+  <!-- 支柱上的小爱心 -->
+  <path d="M0,5 C0,-2 9,-6 13,1 C17,-6 26,-2 26,5 C26,12 13,21 13,21 C13,21 0,12 0,5 Z"
+        fill="#FF8FAB" transform="translate(337,208) scale(1.05)"/>
+  <!-- 台面 -->
+  <ellipse cx="350" cy="100" rx="290" ry="42" fill="#FFFFFF" stroke="#4A3B36" stroke-width="7"/>
+  <ellipse cx="350" cy="100" rx="246" ry="30" fill="none" stroke="#F3CBD9" stroke-width="4"/>
+</svg>
